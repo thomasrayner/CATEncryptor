@@ -4,6 +4,9 @@ using System.IO;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
+using System.Linq;
+using System.Collections;
+using System.Collections.Generic;
 
 namespace CATEncryptor
 {
@@ -48,7 +51,7 @@ namespace CATEncryptor
 
             WriteVerbose($"Encrypting file at {fullPath}, output at {outPath}");
             CATEncryptor cat = new CATEncryptor();
-            cat.Encrypt(fullPath, outPath, Certificate.PublicKey.Key);
+            cat.Encrypt(fullPath, outPath, Certificate.PublicKey.Key, this);
         }
     }
 
@@ -108,8 +111,7 @@ namespace CATEncryptor
 
     class CATEncryptor
     {
-        // Adapted from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=netcore-3.1
-        public void Encrypt(string inFile, string outFile, AsymmetricAlgorithm rsaPublicKey)
+        public void Encrypt(string inFile, string outFile, AsymmetricAlgorithm rsaPublicKey, PSCmdlet ps)
         {
             using (AesManaged aesManaged = new AesManaged())
             {
@@ -138,26 +140,52 @@ namespace CATEncryptor
                     // - the IV
                     // - the encrypted cipher content
 
-                    using (FileStream outFs = new FileStream(outFile, FileMode.Create))
+                    //using (FileStream outFs = new FileStream(outFile, FileMode.Create))
+                    using (MemoryStream outMem = new MemoryStream())
                     {
-                        outFs.Write(LenK, 0, 4);
-                        outFs.Write(LenIV, 0, 4);
-                        outFs.Write(keyEncrypted, 0, lKey);
-                        outFs.Write(aesManaged.IV, 0, lIV);
+                        outMem.Write(LenK, 0, 4);
+                        outMem.Write(LenIV, 0, 4);
+                        outMem.Write(keyEncrypted, 0, lKey);
+                        outMem.Write(aesManaged.IV, 0, lIV);
+                        int bytesInMem = lKey = lIV + 8;
 
                         // Now write the cipher text using a CryptoStream for encrypting.
-                        using (CryptoStream outStreamEncrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write))
+                        using (CryptoStream outStreamEncrypted = new CryptoStream(outMem, transform, CryptoStreamMode.Write))
                         {
-                            using (var inFs = File.OpenRead(inFile))
+                            //using (var inFs = File.OpenRead(inFile))
+                            using (var inFs = ps.InvokeProvider.Content.GetReader(inFile).First())
                             {
                                 int bytesRead = 0;
                                 int blockSizeBytes = aesManaged.BlockSize / 8;
-                                byte[] data = new byte[blockSizeBytes];
+                                inFs.Seek(0, SeekOrigin.Begin);
 
-                                while ((bytesRead = inFs.Read(data, 0, blockSizeBytes)) > 0)
+                                do
                                 {
-                                    outStreamEncrypted.Write(data, 0, bytesRead);
+                                    IList inContentList = inFs.Read(blockSizeBytes);
+                                    bytesRead = inContentList.Count;
+                                    bytesInMem += bytesRead;
+                                    byte[] data = new byte[inContentList.Count];
+                                    outStreamEncrypted.Write(data, 0, data.Length);
+
+                                    if (bytesInMem > 500000 || bytesRead < blockSizeBytes)
+                                    {
+                                        // We either got to the end of the file, or have enough data that we should dump
+                                        // it out of the memorystream
+                                        using (var outPs = ps.InvokeProvider.Content.GetWriter(outFile).First())
+                                        {
+                                            outMem.Seek(0, SeekOrigin.Begin);
+                                            byte[] memContents = new byte[bytesInMem];
+                                            int memRead = outMem.Read(memContents, 0, bytesInMem);
+                                            IList write = new List<string>();
+                                            write.Add(BitConverter.ToString(memContents));
+                                            outPs.Write(write);
+                                        }
+
+                                        outMem.Flush();
+                                        bytesInMem = 0;
+                                    }
                                 }
+                                while (bytesRead > 0);
 
                                 inFs.Close();
                             }
@@ -166,7 +194,7 @@ namespace CATEncryptor
                             outStreamEncrypted.Close();
                         }
 
-                        outFs.Close();
+                        outMem.Close();
                     }
                 }
             }
