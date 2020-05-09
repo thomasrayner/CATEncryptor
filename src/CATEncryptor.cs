@@ -8,6 +8,7 @@ using System.Linq;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace CATEncryptor
 {
@@ -159,18 +160,41 @@ namespace CATEncryptor
                             using (var inFs = ps.InvokeProvider.Content.GetReader(inFile).First())
                             {
                                 int bytesRead = 0;
+                                int blocksRead = 0;
                                 int blockSizeBytes = aesManaged.BlockSize / 8;
                                 inFs.Seek(0, SeekOrigin.Begin);
 
                                 do
                                 {
                                     IList inContentList = inFs.Read(blockSizeBytes);
-                                    bytesRead = inContentList.Count;
-                                    bytesInMem += bytesRead;
-                                    byte[] data = new byte[inContentList.Count];
-                                    outStreamEncrypted.Write(data, 0, data.Length);
+                                    blocksRead = inContentList.Count;
+                                    IList dataList = new List<byte>();
 
-                                    if (bytesInMem > 500000 || bytesRead < blockSizeBytes)
+                                    foreach (var item in inContentList)
+                                    {
+                                        if (item == null)
+                                        {
+                                            continue;
+                                        }
+
+                                        BinaryFormatter bf = new BinaryFormatter();
+                                        using (MemoryStream ms = new MemoryStream())
+                                        {
+                                            bf.Serialize(ms, item);
+                                            foreach (byte b in ms.ToArray())
+                                            {
+                                                dataList.Add(b);
+                                            }
+                                        }
+                                    }
+
+                                    bytesRead = dataList.Count;
+                                    bytesInMem += bytesRead;
+                                    byte[] data = new byte[bytesRead];
+                                    dataList.CopyTo(data, 0);
+                                    outStreamEncrypted.Write(data, 0, bytesRead);
+
+                                    if ((bytesInMem > 500000 || blocksRead < blockSizeBytes) && blocksRead > 0)
                                     {
                                         // We either got to the end of the file, or have enough data that we should dump
                                         // it out of the memorystream
@@ -187,7 +211,7 @@ namespace CATEncryptor
                                         bytesInMem = 0;
                                     }
                                 }
-                                while (bytesRead > 0);
+                                while (blocksRead > 0);
 
                                 inFs.Close();
                             }
