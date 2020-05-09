@@ -48,7 +48,7 @@ namespace CATEncryptor
 
             WriteVerbose($"Encrypting file at {fullPath}, output at {outPath}");
             CATEncryptor cat = new CATEncryptor();
-            cat.Encrypt(fullPath, outPath, (RSACryptoServiceProvider)Certificate.PublicKey.Key);
+            cat.Encrypt(fullPath, outPath, Certificate.PublicKey.Key);
         }
     }
 
@@ -102,14 +102,14 @@ namespace CATEncryptor
 
             WriteVerbose($"Encrypting file at {fullPath}, output at {outPath}");
             CATEncryptor cat = new CATEncryptor();
-            cat.Decrypt(fullPath, outPath, (RSACryptoServiceProvider)Certificate.PrivateKey);
+            cat.Decrypt(fullPath, outPath, Certificate.PrivateKey);
         }
     }
 
     class CATEncryptor
     {
         // Adapted from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=netcore-3.1
-        public void Encrypt(string inFile, string outFile, RSACryptoServiceProvider rsaPublicKey)
+        public void Encrypt(string inFile, string outFile, AsymmetricAlgorithm rsaPublicKey)
         {
             using (AesManaged aesManaged = new AesManaged())
             {
@@ -172,7 +172,7 @@ namespace CATEncryptor
             }
         }
 
-        public void Decrypt(string inFile, string outFile, RSACryptoServiceProvider rsaPrivateKey)
+        public void Decrypt(string inFile, string outFile, AsymmetricAlgorithm rsaPrivateKey)
         {
             // Create instance of AesManaged for symetric decryption of the data.
             using (AesManaged aesManaged = new AesManaged())
@@ -214,7 +214,8 @@ namespace CATEncryptor
                     inFs.Read(IV, 0, lenIV);
 
                     // Use RSACryptoServiceProvider to decrypt the AesManaged key.
-                    byte[] KeyDecrypted = rsaPrivateKey.Decrypt(KeyEncrypted, false);
+                    RSA r = rsaPrivateKey as RSA;
+                    byte[] KeyDecrypted = r.Decrypt(KeyEncrypted, RSAEncryptionPadding.Pkcs1);
 
                     // Decrypt the key.
                     using (ICryptoTransform transform = aesManaged.CreateDecryptor(KeyDecrypted, IV))

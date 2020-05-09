@@ -1,5 +1,4 @@
 #Requires -Modules @{'ModuleName' = 'Pester'; 'MaximumVersion' = '4.99.99'}
-if ($PSVersionTable.PSVersion.Major -gt 5) { throw "Cannot use PowerShell Version higher than 5.1" }
 
 $moduleName = 'CATEncryptor'
 
