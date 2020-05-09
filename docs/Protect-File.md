@@ -8,7 +8,7 @@ schema: 2.0.0
 # Protect-File
 
 ## SYNOPSIS
-{{ Fill in the Synopsis }}
+Encrypts a given file using an installed certificate chosen by the user.
 
 ## SYNTAX
 
@@ -17,21 +17,35 @@ Protect-File [-Path] <String> [[-OutFile] <String>] [-Certificate] <X509Certific
 ```
 
 ## DESCRIPTION
-{{ Fill in the Description }}
+Uses RSA encryption and a user-specified certificate to encrypt a file.
 
 ## EXAMPLES
 
 ### Example 1
+
 ```powershell
-PS C:\> {{ Add example code here }}
+PS C:\> $cert = New-SelfSignedCertificate -DnsName $CertName -CertStoreLocation $CertificateStoreLocation  -KeyAlgorithm RSA -KeyLength 4096 -KeyExportPolicy Exportable -KeyProtection None -Provider 'Microsoft Enhanced RSA and AES Cryptographic Provider'
+
+PS C:\> Protect-File -Path 'C:\Temp\CatFacts.png' -Certificate $cert
 ```
 
-{{ Add example description here }}
+Encrypt the file "C:\Temp\CatFacts.png" with the certificate created and stored in $cert. The encrypted file is created at "C:\Temp\CatFacts.png.encrypted".
+
+### Example 2
+
+```powershell
+PS C:\> $cert = Get-Item "Cert:\CurrentUser\My\$thumbprint"
+
+PS C:\> Protect-File -Path 'C:\Temp\CatFacts.png' -OutFile 'C:\Temp\cat.enc' -Certificate $cert
+```
+
+Encrypt the file "C:\Temp\CatFacts.png" with the certificate whose thumbprint is $thumpbrint, and in the CurrentUser personal store, and stored in $cert. The encrypted file is created at "C:\Temp\cat.enc".
 
 ## PARAMETERS
 
 ### -Certificate
-{{ Fill Certificate Description }}
+
+The X509Certificate2 object (a certificate) that will be used to perform the file encryption.
 
 ```yaml
 Type: X509Certificate2
@@ -46,7 +60,8 @@ Accept wildcard characters: False
 ```
 
 ### -OutFile
-{{ Fill OutFile Description }}
+
+The path to where the encrypted file will be output. If blank, it defaults to the name of the unencrypted file with ".encrypted" appended.
 
 ```yaml
 Type: String
@@ -61,7 +76,8 @@ Accept wildcard characters: False
 ```
 
 ### -Path
-{{ Fill Path Description }}
+
+The path to the unencrypted file that is to be encrypted.
 
 ```yaml
 Type: String
@@ -76,6 +92,7 @@ Accept wildcard characters: False
 ```
 
 ### CommonParameters
+
 This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable, -InformationAction, -InformationVariable, -OutVariable, -OutBuffer, -PipelineVariable, -Verbose, -WarningAction, and -WarningVariable. For more information, see [about_CommonParameters](http://go.microsoft.com/fwlink/?LinkID=113216).
 
 ## INPUTS
@@ -85,6 +102,7 @@ This cmdlet supports the common parameters: -Debug, -ErrorAction, -ErrorVariable
 ## OUTPUTS
 
 ### System.Object
+
 ## NOTES
 
 ## RELATED LINKS

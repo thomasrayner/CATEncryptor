@@ -1,8 +1,8 @@
 using System;
 using System.Management.Automation;
 using System.IO;
-using System.Text;
 using System.Security.Cryptography;
+using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 
 namespace CATEncryptor
@@ -10,46 +10,89 @@ namespace CATEncryptor
     [Cmdlet(VerbsSecurity.Protect, "File")]
     public class ProtectFile : PSCmdlet
     {
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, Position = 0)]
-        [ValidatePathExists()]
-        public string Path { get; set; }
+        private string fullPath;
 
-        [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
+        [Parameter(
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true,
+            Position = 0)]
+        public string Path
+        {
+            get => fullPath;
+            set
+            {
+                var resolvedPaths = SessionState.Path.GetResolvedPSPathFromPSPath(value);
+                if (resolvedPaths.Count > 1)
+                {
+                    throw new ArgumentException(string.Format(
+                        "Unable to resolve argument for parameter {0} to a single file path.", nameof(Path)));
+                }
+
+                fullPath = resolvedPaths[0].Path;
+            }
+        }
+
+        [Parameter(
+            ValueFromPipelineByPropertyName = true,
+            Position = 1)]
         public string OutFile { get; set; }
-
-        [Parameter(Mandatory = true, Position = 2)]
-        public System.Security.Cryptography.X509Certificates.X509Certificate2 Certificate { get; set; }
+        [Parameter(
+            Mandatory = true,
+            Position = 2)]
+        public X509Certificate2 Certificate { get; set; }
 
         protected override void ProcessRecord()
         {
-            string fullPath = File.Exists(Path) ? Path : System.IO.Path.Combine(Environment.CurrentDirectory, Path);
-            string outPath = string.IsNullOrEmpty(OutFile) ?
-                fullPath + ".encrypted" :
-                OutFile;
+            string outPath = string.IsNullOrEmpty(OutFile) ? fullPath + ".encrypted" : OutFile;
 
+            WriteVerbose($"Encrypting file at {fullPath}, output at {outPath}");
             CATEncryptor cat = new CATEncryptor();
             cat.Encrypt(fullPath, outPath, (RSACryptoServiceProvider)Certificate.PublicKey.Key);
-
         }
     }
 
     [Cmdlet(VerbsSecurity.Unprotect, "File")]
     public class UnprotectFile : PSCmdlet
     {
-        [Parameter(Mandatory = true, ValueFromPipeline = true, ValueFromPipelineByPropertyName = true, Position = 0)]
-        [ValidatePathExists()]
-        public string Path { get; set; }
+        private string fullPath;
 
-        [Parameter(ValueFromPipelineByPropertyName = true, Position = 1)]
+        [Parameter(
+            Mandatory = true,
+            ValueFromPipeline = true,
+            ValueFromPipelineByPropertyName = true,
+            Position = 0)]
+        public string Path
+        {
+            get => fullPath;
+            set
+            {
+                var resolvedPaths = SessionState.Path.GetResolvedPSPathFromPSPath(value);
+                if (resolvedPaths.Count > 1)
+                {
+                    throw new ArgumentException(string.Format(
+                        "Unable to resolve argument for parameter {0} to a single file path.", nameof(Path)));
+                }
+
+                fullPath = resolvedPaths[0].Path;
+            }
+        }
+
+        [Parameter(
+            ValueFromPipelineByPropertyName = true,
+            Position = 1)]
         public string OutFile { get; set; }
 
-        [Parameter(Mandatory = true, Position = 2)]
-        public System.Security.Cryptography.X509Certificates.X509Certificate2 Certificate { get; set; }
+        [Parameter(
+            Mandatory = true,
+            Position = 2)]
+        public X509Certificate2 Certificate { get; set; }
 
         protected override void ProcessRecord()
         {
             string fullPath = File.Exists(Path) ? Path : System.IO.Path.Combine(Environment.CurrentDirectory, Path);
             string outPath = OutFile;
+
             if (string.IsNullOrEmpty(OutFile))
             {
                 string fileName = System.IO.Path.GetFileName(fullPath);
@@ -57,27 +100,15 @@ namespace CATEncryptor
                 outPath = System.IO.Path.Combine(dirName, "decrypted_" + Regex.Replace(fileName, @"\.encrypted", string.Empty, RegexOptions.IgnoreCase));
             }
 
+            WriteVerbose($"Encrypting file at {fullPath}, output at {outPath}");
             CATEncryptor cat = new CATEncryptor();
             cat.Decrypt(fullPath, outPath, (RSACryptoServiceProvider)Certificate.PrivateKey);
         }
     }
 
-    class ValidatePathExists : ValidateArgumentsAttribute
-    {
-        protected override void Validate(object arguments, EngineIntrinsics engineIntrinsics)
-        {
-            var path = (string)arguments;
-            bool exists = File.Exists(path) ? true : File.Exists(Path.Combine(Environment.CurrentDirectory, path));
-            if (!exists)
-            {
-                throw new System.IO.FileNotFoundException($"Unable to find file to be encrypted: {path}");
-            }
-        }
-    }
-
     class CATEncryptor
     {
-        // https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=netcore-3.1
+        // Adapted from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=netcore-3.1
         public void Encrypt(string inFile, string outFile, RSACryptoServiceProvider rsaPublicKey)
         {
             using (AesManaged aesManaged = new AesManaged())
@@ -122,6 +153,7 @@ namespace CATEncryptor
                                 int bytesRead = 0;
                                 int blockSizeBytes = aesManaged.BlockSize / 8;
                                 byte[] data = new byte[blockSizeBytes];
+
                                 while ((bytesRead = inFs.Read(data, 0, blockSizeBytes)) > 0)
                                 {
                                     outStreamEncrypted.Write(data, 0, bytesRead);
@@ -133,6 +165,7 @@ namespace CATEncryptor
                             outStreamEncrypted.FlushFinalBlock();
                             outStreamEncrypted.Close();
                         }
+
                         outFs.Close();
                     }
                 }
@@ -141,7 +174,6 @@ namespace CATEncryptor
 
         public void Decrypt(string inFile, string outFile, RSACryptoServiceProvider rsaPrivateKey)
         {
-
             // Create instance of AesManaged for symetric decryption of the data.
             using (AesManaged aesManaged = new AesManaged())
             {
@@ -167,7 +199,7 @@ namespace CATEncryptor
                     int lenK = BitConverter.ToInt32(LenK, 0);
                     int lenIV = BitConverter.ToInt32(LenIV, 0);
 
-                    // Determine the start postition of the ciphter text (startC) and its length(lenC).
+                    // Determine the start postition of the ciphter text (startC) and its length (lenC).
                     int startC = lenK + lenIV + 8;
                     int lenC = (int)inFs.Length - startC;
 
@@ -196,37 +228,23 @@ namespace CATEncryptor
                             using (CryptoStream outStreamDecrypted = new CryptoStream(outFs, transform, CryptoStreamMode.Write))
                             {
                                 int count = 0;
-                                int offset = 0;
-
                                 int blockSizeBytes = aesManaged.BlockSize / 8;
                                 byte[] data = new byte[blockSizeBytes];
 
                                 do
                                 {
                                     count = inFs.Read(data, 0, blockSizeBytes);
-                                    offset += count;
                                     outStreamDecrypted.Write(data, 0, count);
                                 }
                                 while (count > 0);
 
-                                // using (var inFs = File.OpenRead(inFile))
-                                // {
-                                //     int bytesRead = 0;
-                                //     int blockSizeBytes = aesManaged.BlockSize / 8;
-                                //     byte[] data = new byte[blockSizeBytes];
-                                //     while ((bytesRead = inFs.Read(data, 0, blockSizeBytes)) > 0)
-                                //     {
-                                //         outStreamEncrypted.Write(data, 0, bytesRead);
-                                //     }
-
-                                //     inFs.Close();
-                                // }
-
                                 outStreamDecrypted.FlushFinalBlock();
                                 outStreamDecrypted.Close();
                             }
+
                             outFs.Close();
                         }
+
                         inFs.Close();
                     }
                 }

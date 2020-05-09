@@ -30,7 +30,11 @@ CompanyName = ''
 Copyright = '(c) Thomas Rayner. All rights reserved.'
 
 # Description of the functionality provided by this module
-# Description = ''
+Description = "
+    Functions for encrypting and decrypting files using certificates installed on the system.`n
+    To make a cert that works with these functions:`n
+    New-SelfSignedCertificate -DnsName `$CertName -CertStoreLocation `$CertificateStoreLocation  -KeyAlgorithm RSA -KeyLength 4096 -KeyExportPolicy Exportable -KeyProtection None -Provider 'Microsoft Enhanced RSA and AES Cryptographic Provider'
+"
 
 # Minimum version of the PowerShell engine required by this module
 PowerShellVersion = '5.0'
@@ -54,7 +58,7 @@ PowerShellVersion = '5.0'
 # RequiredModules = @()
 
 # Assemblies that must be loaded prior to importing this module
-RequiredAssemblies = @('.\CATEncryptor.dll')
+# RequiredAssemblies = @()
 
 # Script files (.ps1) that are run in the caller's environment prior to importing this module.
 # ScriptsToProcess = @()
