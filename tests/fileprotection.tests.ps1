@@ -5,18 +5,19 @@ $moduleName = 'CATEncryptor'
 Import-Module "$PSScriptRoot\..\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
 
 $controlPlaintextPath = "$PSScriptRoot\data.csv"
-$plaintextPath = "$($env:TEMP)\data.csv"
-$defaultEncryptedPlaintext = "$($env:TEMP)\data.csv.encrypted"
-$defaultDecryptedPlaintext = "$($env:TEMP)\decrypted_data.csv"
-$specificEncryptedPlaintext = "$($env:TEMP)\data.csv.enc"
-$specificDecryptedPlaintext = "$($env:TEMP)\decryptedfile.csv"
-
+$plaintextPath = "TestDrive:\data.csv"
 $controlImagePath = "$PSScriptRoot\catfacts.png"
-$imagePath = "$($env:TEMP)\catfacts.png"
-$defaultEncryptedImage = "$($env:TEMP)\catfacts.png.encrypted"
-$defaultDecryptedImage = "$($env:TEMP)\decrypted_catfacts.png"
-$specificEncryptedImage = "$($env:TEMP)\catfacts.png.enc"
-$specificDecryptedImage = "$($env:TEMP)\decryptedimg.png"
+$imagePath = "TestDrive:\catfacts.png"
+$defaultEncryptedPlaintext = "TestDrive:\data.csv.encrypted"
+$defaultDecryptedPlaintext = "TestDrive:\decrypted_data.csv"
+$specificEncryptedPlaintext = "TestDrive:\data.csv.enc"
+$specificDecryptedPlaintext = "TestDrive:\decryptedfile.csv"
+$defaultEncryptedImage = "TestDrive:\catfacts.png.encrypted"
+$defaultDecryptedImage = "TestDrive:\decrypted_catfacts.png"
+$specificEncryptedImage = "TestDrive:\catfacts.png.enc"
+$specificDecryptedImage = "TestDrive:\decryptedimg.png"
+
+
 
 $certLocation = 'Cert:\CurrentUser\My'
 
@@ -57,6 +58,10 @@ describe 'CATEncryptor' {
     }
 
     context 'Unprotect-File - plaintext files' {
+        BeforeAll {
+            Protect-File -Path $plaintextPath -Certificate $testCertificate
+            Protect-File -Path $plaintextPath -Certificate $testCertificate -OutFile $specificEncryptedPlaintext
+        }
         it 'decrypts file with default OutFile value' {
             Unprotect-File -Path $defaultEncryptedPlaintext -Certificate $testCertificate
             Test-Path $defaultDecryptedPlaintext | Should -Be $true
@@ -71,6 +76,10 @@ describe 'CATEncryptor' {
     }
 
     context 'Unprotect-File - image files' {
+        BeforeAll {
+            Protect-File -Path $imagePath -Certificate $testCertificate
+            Protect-File -Path $imagePath -Certificate $testCertificate -OutFile $specificEncryptedImage
+        }
         it 'decrypts image with default OutFile value' {
             Unprotect-File -Path $defaultEncryptedImage -Certificate $testCertificate
             Test-Path $defaultDecryptedImage | Should -Be $true
@@ -86,4 +95,4 @@ describe 'CATEncryptor' {
 }
 
 Remove-Module $moduleName -Force
-Remove-Item @($plaintextPath, $defaultEncryptedPlaintext, $defaultDecryptedPlaintext, $specificEncryptedPlaintext, $specificDecryptedPlaintext, $imagePath, $defaultEncryptedImage, $defaultDecryptedImage, $specificEncryptedImage, $specificDecryptedImage, $(Join-Path $certLocation $testCertificate.Thumbprint))
+Remove-Item $(Join-Path $certLocation $testCertificate.Thumbprint)
