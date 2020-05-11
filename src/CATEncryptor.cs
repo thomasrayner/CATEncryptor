@@ -170,7 +170,6 @@ namespace CATEncryptor
 
     class CATEncryptor
     {
-        // Adapted from https://docs.microsoft.com/en-us/dotnet/api/system.security.cryptography.x509certificates.x509certificate2?view=netcore-3.1
         public void Encrypt(string inFile, string outFile, AsymmetricAlgorithm rsaPublicKey)
         {
             using (AesManaged aesManaged = new AesManaged())
