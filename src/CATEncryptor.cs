@@ -75,7 +75,7 @@ namespace CATEncryptor
                 {
                     throw new FileNotFoundException($"The file {outPath} is not located on a FileSystemProvider type of PSProvider");
                 }
-                resolvedOutPath = resolvedOutParentInfo.ProviderPath + System.IO.Path.GetFileName(outPath);
+                resolvedOutPath = System.IO.Path.Combine(resolvedOutParentInfo.ProviderPath, System.IO.Path.GetFileName(outPath));
             }
 
             CATEncryptor cat = new CATEncryptor();
@@ -159,7 +159,8 @@ namespace CATEncryptor
                 {
                     throw new FileNotFoundException($"The file {outPath} is not located on a FileSystemProvider type of PSProvider");
                 }
-                resolvedOutPath = resolvedOutParentInfo.ProviderPath + System.IO.Path.GetFileName(outPath);
+                resolvedOutPath = System.IO.Path.Combine(resolvedOutParentInfo.ProviderPath, System.IO.Path.GetFileName(outPath));
+
             }
 
             CATEncryptor cat = new CATEncryptor();
