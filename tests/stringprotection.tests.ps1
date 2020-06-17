@@ -1,15 +1,16 @@
 #Requires -Modules @{'ModuleName' = 'Pester'; 'ModuleVersion' = '5.0.1';}
 
-describe 'CATEncryptor' {
+describe 'CATEncryptor - String Protection' {
     BeforeAll {
         $moduleName = 'CATEncryptor'
 
         Import-Module "$PSScriptRoot\..\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
 
         $plainText = 'this is a big ol secret'
+        $unicodePlaintext = 'this Π symbol means pi'
 
         $certLocation = 'Cert:\CurrentUser\My'
-        $testCertificate = New-SelfSignedCertificate -DnsName 'FileProtection' -CertStoreLocation $certLocation -KeyAlgorithm RSA -KeyLength 4096 -KeyExportPolicy Exportable -KeyProtection None -Provider 'Microsoft Enhanced RSA and AES Cryptographic Provider'
+        $testCertificate = New-SelfSignedCertificate -DnsName 'StringProtection' -CertStoreLocation $certLocation -KeyAlgorithm RSA -KeyLength 4096 -KeyExportPolicy Exportable -KeyProtection None -Provider 'Microsoft Enhanced RSA and AES Cryptographic Provider'
     }
 
     AfterAll {        
@@ -17,7 +18,7 @@ describe 'CATEncryptor' {
         Remove-Item $(Join-Path $certLocation $testCertificate.Thumbprint)
     }
 
-    context 'Protect and Unprotect-String' {
+    context 'Protect and Unprotect-String - normal chars' {
         it 'encrypts a string' {
             $encryptedText = Protect-String -Plaintext $plainText -Certificate $testCertificate
             $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encryptedText))
@@ -33,6 +34,25 @@ describe 'CATEncryptor' {
 
             $decryptedText = Unprotect-String -Ciphertext $encryptedText -Certificate $testCertificate
             $decryptedText | Should -Be $plainText
+        }
+    }
+
+    context 'Protect and Unprotect-String - including odd unicode chars' {
+        it 'encrypts when there are non-standard unicode characters present' {
+            $encryptedText = Protect-String -Plaintext $unicodePlaintext -Certificate $testCertificate
+            $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encryptedText))
+
+            $decoded -NotMatch 'symbol' | Should -Be $true
+            $encryptedText -NotMatch 'symbol' | Should -Be $true
+        }
+
+        it 'decrypt preserves non-standard unicode characters' {
+            $encryptedText = Protect-String -Plaintext $unicodePlaintext -Certificate $testCertificate
+            $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encryptedText))
+            $decoded -NotMatch 'symbol' | Should -Be $true
+
+            $decryptedText = Unprotect-String -Ciphertext $encryptedText -Certificate $testCertificate
+            $decryptedText | Should -Be $unicodePlaintext
         }
     }
 }
