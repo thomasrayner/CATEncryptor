@@ -8,20 +8,23 @@ schema: 2.0.0
 # Unprotect-File
 
 ## SYNOPSIS
+
 Decrypts a file that was encrypted with Protect-File, using an installed certificate chosen by the user.
 
 ## SYNTAX
 
-```
+```powershell
 Unprotect-File [-Path] <String> [[-OutFile] <String>] [-Certificate] <X509Certificate2> [<CommonParameters>]
 ```
 
 ## DESCRIPTION
+
 Uses RSA encryption and a user-specified certificate to decrypt a file that was encrypted with Protect-File.
 
 ## EXAMPLES
 
 ### Example 1
+
 ```powershell
 PS C:\> $cert = Get-Item "Cert:\CurrentUser\My\$thumbprint"
 
@@ -31,6 +34,7 @@ PS C:\> Unprotect-File -Path 'C:\Temp\CatFacts.png.encrypted' -Certificate $cert
 The encrypted file "C:\Temp\CatFacts.png.encrypted" will be decrypted with the certificate it was encrypted with (stored in $cert). The decrypted file will be stored at "C:\Temp\decrypted_CatFacts.png".
 
 ### Example 2
+
 ```powershell
 PS C:\> $cert = Get-Item "Cert:\CurrentUser\My\$thumbprint"
 

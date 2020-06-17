@@ -1,6 +1,6 @@
 #Requires -Modules @{'ModuleName' = 'Pester'; 'ModuleVersion' = '5.0.1';}
 
-describe 'CATEncryptor' {
+describe 'CATEncryptor - File Protection' {
     BeforeAll {
         $moduleName = 'CATEncryptor'
 
