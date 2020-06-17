@@ -1,4 +1,4 @@
-#Requires -Modules Pester, Platyps
+#Requires -Modules @{'ModuleName' = 'Pester'; 'ModuleVersion' = '5.0.1';}, Platyps
 
 $moduleName = 'CATEncryptor'
 
@@ -11,7 +11,7 @@ Push-Location '.\src'
 dotnet build
 Pop-Location
 
-Invoke-Pester -Path "$PSScriptRoot\tests\"
+Invoke-Pester -Path "$PSScriptRoot\tests\" -Output 'Detailed'
 
 Write-Output 'Creating output directory "out"'
 New-Item -Name 'out' -ItemType 'Directory' -ErrorAction 'SilentlyContinue'

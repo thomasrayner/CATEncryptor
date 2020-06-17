@@ -1,30 +1,35 @@
-#Requires -Modules @{'ModuleName' = 'Pester'; 'MaximumVersion' = '4.99.99'}
-
-$moduleName = 'CATEncryptor'
-
-Import-Module "$PSScriptRoot\..\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
-
-$controlPlaintextPath = "$PSScriptRoot\data.csv"
-$plaintextPath = "TestDrive:\data.csv"
-$controlImagePath = "$PSScriptRoot\catfacts.png"
-$imagePath = "TestDrive:\catfacts.png"
-
-$defaultEncryptedPlaintext = "TestDrive:\data.csv.encrypted"
-$defaultDecryptedPlaintext = "TestDrive:\decrypted_data.csv"
-$specificEncryptedPlaintext = "TestDrive:\data.csv.enc"
-$specificDecryptedPlaintext = "TestDrive:\decryptedfile.csv"
-$defaultEncryptedImage = "TestDrive:\catfacts.png.encrypted"
-$defaultDecryptedImage = "TestDrive:\decrypted_catfacts.png"
-$specificEncryptedImage = "TestDrive:\catfacts.png.enc"
-$specificDecryptedImage = "TestDrive:\decryptedimg.png"
-
-$certLocation = 'Cert:\CurrentUser\My'
-$testCertificate = New-SelfSignedCertificate -DnsName 'FileProtection' -CertStoreLocation $certLocation -KeyAlgorithm RSA -KeyLength 4096 -KeyExportPolicy Exportable -KeyProtection None -Provider 'Microsoft Enhanced RSA and AES Cryptographic Provider'
+#Requires -Modules @{'ModuleName' = 'Pester'; 'ModuleVersion' = '5.0.1';}
 
 describe 'CATEncryptor' {
     BeforeAll {
+        $moduleName = 'CATEncryptor'
+
+        Import-Module "$PSScriptRoot\..\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
+
+        $controlPlaintextPath = "$PSScriptRoot\data.csv"
+        $plaintextPath = "TestDrive:\data.csv"
+        $controlImagePath = "$PSScriptRoot\catfacts.png"
+        $imagePath = "TestDrive:\catfacts.png"
+
+        $defaultEncryptedPlaintext = "TestDrive:\data.csv.encrypted"
+        $defaultDecryptedPlaintext = "TestDrive:\decrypted_data.csv"
+        $specificEncryptedPlaintext = "TestDrive:\data.csv.enc"
+        $specificDecryptedPlaintext = "TestDrive:\decryptedfile.csv"
+        $defaultEncryptedImage = "TestDrive:\catfacts.png.encrypted"
+        $defaultDecryptedImage = "TestDrive:\decrypted_catfacts.png"
+        $specificEncryptedImage = "TestDrive:\catfacts.png.enc"
+        $specificDecryptedImage = "TestDrive:\decryptedimg.png"
+
+        $certLocation = 'Cert:\CurrentUser\My'
+        $testCertificate = New-SelfSignedCertificate -DnsName 'FileProtection' -CertStoreLocation $certLocation -KeyAlgorithm RSA -KeyLength 4096 -KeyExportPolicy Exportable -KeyProtection None -Provider 'Microsoft Enhanced RSA and AES Cryptographic Provider'
+
         Copy-Item $controlPlaintextPath $plaintextPath
         Copy-Item $controlImagePath $imagePath
+    }
+
+    AfterAll {        
+        Remove-Module $moduleName -Force
+        Remove-Item $(Join-Path $certLocation $testCertificate.Thumbprint)
     }
 
     context 'Protect-File - plaintext files' {
@@ -93,6 +98,3 @@ describe 'CATEncryptor' {
         }
     }
 }
-
-Remove-Module $moduleName -Force
-Remove-Item $(Join-Path $certLocation $testCertificate.Thumbprint)
