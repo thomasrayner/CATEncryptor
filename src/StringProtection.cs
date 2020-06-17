@@ -1,12 +1,7 @@
-using System;
 using System.Management.Automation;
 using System.IO;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
-using System.Linq;
 using System.Text;
-using System.Collections.Generic;
 
 namespace CATEncryptor
 {
@@ -18,7 +13,7 @@ namespace CATEncryptor
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
             Position = 0)]
-        public string String { get; set; }
+        public string Plaintext { get; set; }
 
         [Parameter(
             Mandatory = true,
@@ -28,16 +23,14 @@ namespace CATEncryptor
         protected override void ProcessRecord()
         {
             CATEncryptor cat = new CATEncryptor();
-            using (MemoryStream memIn = new MemoryStream(Encoding.Default.GetBytes(String ?? "")))
+            using (MemoryStream memIn = new MemoryStream(Encoding.UTF8.GetBytes(Plaintext ?? "")))
             {
                 using (MemoryStream memOut = new MemoryStream())
                 {
                     cat.Encrypt(memIn, memOut, Certificate.PublicKey.Key);
-                    byte[] memOutBytes = new byte[memOut.Length];
-                    memOut.Seek(0, SeekOrigin.Begin);
-                    int read = memOut.Read(memOutBytes, 0, memOutBytes.Length);
-                    string enc = Encoding.Default.GetString(memOutBytes);
-                    WriteObject(enc);
+                    byte[] buffer = memOut.ToArray();
+                    string ciphertextb64 = System.Convert.ToBase64String(buffer);
+                    WriteObject(ciphertextb64);
                     memOut.Close();
                 }
                 memIn.Close();
@@ -53,7 +46,7 @@ namespace CATEncryptor
             ValueFromPipeline = true,
             ValueFromPipelineByPropertyName = true,
             Position = 0)]
-        public string String { get; set; }
+        public string CiphertextBase64 { get; set; }
 
         [Parameter(
             Mandatory = true,
@@ -63,16 +56,16 @@ namespace CATEncryptor
         protected override void ProcessRecord()
         {
             CATEncryptor cat = new CATEncryptor();
-            using (MemoryStream memIn = new MemoryStream(Encoding.Default.GetBytes(String ?? "")))
+            byte[] ciphertextBytes = System.Convert.FromBase64String(CiphertextBase64);
+
+            using (MemoryStream memIn = new MemoryStream(ciphertextBytes))
             {
                 using (MemoryStream memOut = new MemoryStream())
                 {
                     cat.Decrypt(memIn, memOut, Certificate.PrivateKey);
-                    byte[] memOutBytes = new byte[memOut.Length];
-                    memOut.Seek(0, SeekOrigin.Begin);
-                    int read = memOut.Read(memOutBytes, 0, memOutBytes.Length);
-                    string enc = Encoding.Default.GetString(memOutBytes);
-                    WriteObject(enc);
+                    byte[] buffer = memOut.ToArray();
+                    string plaintext = Encoding.UTF8.GetString(buffer, 0, buffer.Length);
+                    WriteObject(plaintext);
                     memOut.Close();
                 }
                 memIn.Close();

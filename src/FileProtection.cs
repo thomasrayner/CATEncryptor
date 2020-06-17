@@ -38,6 +38,7 @@ namespace CATEncryptor
             ValueFromPipelineByPropertyName = true,
             Position = 1)]
         public string OutFile { get; set; }
+
         [Parameter(
             Mandatory = true,
             Position = 2)]
@@ -56,26 +57,13 @@ namespace CATEncryptor
                 throw new FileNotFoundException($"The file {fullPath} is not located on a FileSystemProvider type of PSProvider");
             }
 
-            string resolvedOutPath = string.Empty;
-            try
+            ProviderInfo resolvedOutProviderInfo;
+            PSDriveInfo resolvedOutDriveInfo;
+            string resolvedOutPath = this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(outPath, out resolvedOutProviderInfo, out resolvedOutDriveInfo);
+
+            if (resolvedOutProviderInfo.ImplementingType.Name != "FileSystemProvider")
             {
-                var resolvedOutPathInfo = this.SessionState.Path.GetResolvedPSPathFromPSPath(outPath).First();
-                if (resolvedOutPathInfo.Provider.ImplementingType.Name != "FileSystemProvider")
-                {
-                    throw new FileNotFoundException($"The file {outPath} is not located on a FileSystemProvider type of PSProvider");
-                }
-                resolvedOutPath = resolvedOutPathInfo.ProviderPath;
-            }
-            catch (ItemNotFoundException)
-            {
-                // It's alright to create a new file
-                string outParent = this.SessionState.Path.ParseParent(outPath, System.IO.Path.GetDirectoryName(outPath));
-                var resolvedOutParentInfo = this.SessionState.Path.GetResolvedPSPathFromPSPath(outParent).First();
-                if (resolvedOutParentInfo.Provider.ImplementingType.Name != "FileSystemProvider")
-                {
-                    throw new FileNotFoundException($"The file {outPath} is not located on a FileSystemProvider type of PSProvider");
-                }
-                resolvedOutPath = System.IO.Path.Combine(resolvedOutParentInfo.ProviderPath, System.IO.Path.GetFileName(outPath));
+                throw new FileNotFoundException($"The file {outPath} is not located on a FileSystemProvoder type of PSProvider");
             }
 
             CATEncryptor cat = new CATEncryptor();
@@ -143,33 +131,20 @@ namespace CATEncryptor
 
             if (string.IsNullOrEmpty(OutFile))
             {
-                string fileName = System.IO.Path.GetFileName(fullPath);
-                string dirName = System.IO.Path.GetDirectoryName(fullPath);
+                string fileName = System.IO.Path.GetFileName(resolvedFullPath);
+                string dirName = System.IO.Path.GetDirectoryName(resolvedFullPath);
                 outPath = System.IO.Path.Combine(dirName, "decrypted_" + Regex.Replace(fileName, @"\.encrypted", string.Empty, RegexOptions.IgnoreCase));
             }
 
             WriteVerbose($"Decrypting file at {fullPath}, output at {outPath}");
 
-            string resolvedOutPath = string.Empty;
-            try
+            ProviderInfo resolvedOutProviderInfo;
+            PSDriveInfo resolvedOutDriveInfo;
+            string resolvedOutPath = this.SessionState.Path.GetUnresolvedProviderPathFromPSPath(outPath, out resolvedOutProviderInfo, out resolvedOutDriveInfo);
+
+            if (resolvedOutProviderInfo.ImplementingType.Name != "FileSystemProvider")
             {
-                var resolvedOutPathInfo = this.SessionState.Path.GetResolvedPSPathFromPSPath(outPath).First();
-                if (resolvedOutPathInfo.Provider.ImplementingType.Name != "FileSystemProvider")
-                {
-                    throw new FileNotFoundException($"The file {outPath} is not located on a FileSystemProvider type of PSProvider");
-                }
-                resolvedOutPath = resolvedOutPathInfo.ProviderPath;
-            }
-            catch (ItemNotFoundException)
-            {
-                // It's alright to create a new file
-                string outParent = this.SessionState.Path.ParseParent(outPath, System.IO.Path.GetDirectoryName(outPath));
-                var resolvedOutParentInfo = this.SessionState.Path.GetResolvedPSPathFromPSPath(outParent).First();
-                if (resolvedOutParentInfo.Provider.ImplementingType.Name != "FileSystemProvider")
-                {
-                    throw new FileNotFoundException($"The file {outPath} is not located on a FileSystemProvider type of PSProvider");
-                }
-                resolvedOutPath = System.IO.Path.Combine(resolvedOutParentInfo.ProviderPath, System.IO.Path.GetFileName(outPath));
+                throw new FileNotFoundException($"The file {outPath} is not located on a FileSystemProvider type of PSProvider");
             }
 
             CATEncryptor cat = new CATEncryptor();
