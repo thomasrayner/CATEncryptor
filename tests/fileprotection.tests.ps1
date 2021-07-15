@@ -40,7 +40,6 @@ describe 'CATEncryptor - File Protection' {
 
     context 'Protect-File - plaintext files' {
         it 'encrypts file with default OutFile value' {
-            Test-Path $imagePath | Should -Be $true
             Protect-File -Path $plaintextPath -Certificate $testCertificate
             Test-Path $defaultEncryptedPlaintext | Should -Be $true
             (Get-Content $defaultEncryptedPlaintext -Raw) -NotMatch 'row' | Should -Be $true
@@ -74,7 +73,7 @@ describe 'CATEncryptor - File Protection' {
         }
 
         it 'decrypts file with default OutFile value' {
-            Write-Host $defaultEncryptedPlaintext
+            Write-Host $(Get-Content $defaultEncryptedPlaintext -Raw)
 
             Unprotect-File -Path $defaultEncryptedPlaintext -Certificate $testCertificate
             Test-Path $defaultDecryptedPlaintext | Should -Be $true
