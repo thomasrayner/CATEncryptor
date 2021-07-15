@@ -73,9 +73,7 @@ describe 'CATEncryptor - File Protection' {
         }
 
         it 'decrypts file with default OutFile value' {
-            Write-Host $(Get-Content $testCertificate -Raw)
-
-            Unprotect-File -Path $defaultEncryptedPlaintext -Certificate $testCertificate
+            Unprotect-File -Path $defaultEncryptedPlaintext -Certificate $testCertificate -verbose 4>&1
             Test-Path $defaultDecryptedPlaintext | Should -Be $true
             Compare-Object (Get-Content $defaultDecryptedPlaintext -Raw) (Get-Content $controlPlaintextPath -Raw) | Should -Be $null
         }
