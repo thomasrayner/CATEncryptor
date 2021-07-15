@@ -31,7 +31,7 @@ describe 'CATEncryptor - File Protection' {
 
         Copy-Item $controlPlaintextPath $plaintextPath
         Copy-Item $controlImagePath $imagePath
-    }
+}
 
     AfterAll {        
         Remove-Module $moduleName -Force
@@ -40,6 +40,7 @@ describe 'CATEncryptor - File Protection' {
 
     context 'Protect-File - plaintext files' {
         it 'encrypts file with default OutFile value' {
+            Test-Path $imagePath | Should -Be $true
             Protect-File -Path $plaintextPath -Certificate $testCertificate
             Test-Path $defaultEncryptedPlaintext | Should -Be $true
             (Get-Content $defaultEncryptedPlaintext -Raw) -NotMatch 'row' | Should -Be $true
@@ -73,7 +74,8 @@ describe 'CATEncryptor - File Protection' {
         }
 
         it 'decrypts file with default OutFile value' {
-            Protect-File -Path $plaintextPath -Certificate $testCertificate
+            Write-Host $defaultEncryptedPlaintext
+
             Unprotect-File -Path $defaultEncryptedPlaintext -Certificate $testCertificate
             Test-Path $defaultDecryptedPlaintext | Should -Be $true
             Compare-Object (Get-Content $defaultDecryptedPlaintext -Raw) (Get-Content $controlPlaintextPath -Raw) | Should -Be $null
