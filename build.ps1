@@ -1,4 +1,4 @@
-#Requires -Modules Pester, Platyps
+#Requires -Modules @{ModuleName='Pester'; RequiredVersion='4.10.1'}, Platyps
 
 $moduleName = 'CATEncryptor'
 
