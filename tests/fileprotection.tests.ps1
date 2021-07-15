@@ -4,11 +4,17 @@ describe 'CATEncryptor - File Protection' {
     BeforeAll {
         $moduleName = 'CATEncryptor'
 
-        Import-Module "$PSScriptRoot\..\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
+        $root = if ([string]::IsNullOrEmpty($env:Build_SourcesDirectory)) {
+            $PSScriptRoot
+        }
+        else {
+            $env:Build_SourcesDirectory
+        }
+        Import-Module "$root\..\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
 
-        $controlPlaintextPath = "$PSScriptRoot\data.csv"
+        $controlPlaintextPath = "$root\data.csv"
         $plaintextPath = "TestDrive:\data.csv"
-        $controlImagePath = "$PSScriptRoot\catfacts.png"
+        $controlImagePath = "$root\catfacts.png"
         $imagePath = "TestDrive:\catfacts.png"
 
         $defaultEncryptedPlaintext = "TestDrive:\data.csv.encrypted"

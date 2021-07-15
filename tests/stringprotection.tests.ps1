@@ -4,7 +4,13 @@ describe 'CATEncryptor - String Protection' {
     BeforeAll {
         $moduleName = 'CATEncryptor'
 
-        Import-Module "$PSScriptRoot\..\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
+        $root = if ([string]::IsNullOrEmpty($env:Build_SourcesDirectory)) {
+            $PSScriptRoot
+        }
+        else {
+            $env:Build_SourcesDirectory
+        }
+        Import-Module "$root\..\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
 
         $plainText = 'this is a big ol secret'
         $unicodePlaintext = 'this Π symbol means pi'
