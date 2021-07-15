@@ -1,0 +1,61 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<test-results xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="nunit_schema_2.5.xsd" name="Pester" total="12" errors="0" failures="0" not-run="0" inconclusive="0" ignored="0" skipped="0" invalid="0" date="2021-07-15" time="13:45:25">
+  <environment os-version="10.0.22000" machine-name="TABLET-V1R61O3Q" clr-version="Unknown" cwd="C:\git\_github\CATEncryptor" user-domain="REDMOND" user="thrayner" nunit-version="2.5.8.0" platform="Microsoft Windows 11 Enterprise|C:\WINDOWS|\Device\Harddisk0\Partition3" />
+  <culture-info current-culture="en-US" current-uiculture="en-US" />
+  <test-suite type="TestFixture" name="Pester" executed="True" result="Success" success="True" time="6.8683" asserts="0" description="Pester">
+    <results>
+      <test-suite type="TestFixture" name="C:\git\_github\CATEncryptor\tests\fileprotection.tests.ps1" executed="True" result="Success" success="True" time="3.8196" asserts="0" description="C:\git\_github\CATEncryptor\tests\fileprotection.tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="CATEncryptor - File Protection" executed="True" result="Success" success="True" time="3.3502" asserts="0" description="CATEncryptor - File Protection">
+            <results>
+              <test-suite type="TestFixture" name="CATEncryptor - File Protection.Protect-File - plaintext files" executed="True" result="Success" success="True" time="0.5238" asserts="0" description="CATEncryptor - File Protection.Protect-File - plaintext files">
+                <results>
+                  <test-case description="encrypts file with default OutFile value" name="CATEncryptor - File Protection.Protect-File - plaintext files.encrypts file with default OutFile value" time="0.3393" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="encrypts file with specific OutFile value" name="CATEncryptor - File Protection.Protect-File - plaintext files.encrypts file with specific OutFile value" time="0.0538" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="CATEncryptor - File Protection.Protect-File - image files" executed="True" result="Success" success="True" time="0.6676" asserts="0" description="CATEncryptor - File Protection.Protect-File - image files">
+                <results>
+                  <test-case description="encrypts image with default OutFile value" name="CATEncryptor - File Protection.Protect-File - image files.encrypts image with default OutFile value" time="0.0525" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="encrypts image with specific OutFile value" name="CATEncryptor - File Protection.Protect-File - image files.encrypts image with specific OutFile value" time="0.0326" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="CATEncryptor - File Protection.Unprotect-File - plaintext files" executed="True" result="Success" success="True" time="0.9326" asserts="0" description="CATEncryptor - File Protection.Unprotect-File - plaintext files">
+                <results>
+                  <test-case description="decrypts file with default OutFile value" name="CATEncryptor - File Protection.Unprotect-File - plaintext files.decrypts file with default OutFile value" time="0.0798" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="decrypts file with specific OutFile value" name="CATEncryptor - File Protection.Unprotect-File - plaintext files.decrypts file with specific OutFile value" time="0.0447" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="CATEncryptor - File Protection.Unprotect-File - image files" executed="True" result="Success" success="True" time="1.1624" asserts="0" description="CATEncryptor - File Protection.Unprotect-File - image files">
+                <results>
+                  <test-case description="decrypts image with default OutFile value" name="CATEncryptor - File Protection.Unprotect-File - image files.decrypts image with default OutFile value" time="0.0627" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="decrypts image with specific OutFile value" name="CATEncryptor - File Protection.Unprotect-File - image files.decrypts image with specific OutFile value" time="0.0672" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+      <test-suite type="TestFixture" name="C:\git\_github\CATEncryptor\tests\stringprotection.tests.ps1" executed="True" result="Success" success="True" time="3.0487" asserts="0" description="C:\git\_github\CATEncryptor\tests\stringprotection.tests.ps1">
+        <results>
+          <test-suite type="TestFixture" name="CATEncryptor - String Protection" executed="True" result="Success" success="True" time="2.9804" asserts="0" description="CATEncryptor - String Protection">
+            <results>
+              <test-suite type="TestFixture" name="CATEncryptor - String Protection.Protect and Unprotect-String - normal chars" executed="True" result="Success" success="True" time="0.1169" asserts="0" description="CATEncryptor - String Protection.Protect and Unprotect-String - normal chars">
+                <results>
+                  <test-case description="encrypts a string" name="CATEncryptor - String Protection.Protect and Unprotect-String - normal chars.encrypts a string" time="0.031" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="decrypts a string" name="CATEncryptor - String Protection.Protect and Unprotect-String - normal chars.decrypts a string" time="0.0348" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+              <test-suite type="TestFixture" name="CATEncryptor - String Protection.Protect and Unprotect-String - including odd unicode chars" executed="True" result="Success" success="True" time="0.2138" asserts="0" description="CATEncryptor - String Protection.Protect and Unprotect-String - including odd unicode chars">
+                <results>
+                  <test-case description="encrypts when there are non-standard unicode characters present" name="CATEncryptor - String Protection.Protect and Unprotect-String - including odd unicode chars.encrypts when there are non-standard unicode characters present" time="0.0318" asserts="0" success="True" result="Success" executed="True" />
+                  <test-case description="decrypt preserves non-standard unicode characters" name="CATEncryptor - String Protection.Protect and Unprotect-String - including odd unicode chars.decrypt preserves non-standard unicode characters" time="0.0288" asserts="0" success="True" result="Success" executed="True" />
+                </results>
+              </test-suite>
+            </results>
+          </test-suite>
+        </results>
+      </test-suite>
+    </results>
+  </test-suite>
+</test-results>

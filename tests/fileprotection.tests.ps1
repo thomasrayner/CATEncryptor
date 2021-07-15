@@ -1,4 +1,4 @@
-#Requires -Modules @{'ModuleName' = 'Pester'; 'ModuleVersion' = '5.0.1';}
+#Requires -Modules @{'ModuleName' = 'Pester'; 'ModuleVersion' = '5.2.2';}
 
 describe 'CATEncryptor - File Protection' {
     BeforeAll {
