@@ -6,59 +6,60 @@ variables:
 trigger:
 - main
 
-pool:
-  vmImage: windows-latest
-
-steps:
-- task: DotNetCoreCLI@2
-  inputs:
-    command: 'build'
-    projects: '$(Build.SourcesDirectory)/src/*.csproj'
-    workingDirectory: '$(Build.SourcesDirectory)/src/'
-- task: PowerShell@2
-  inputs:
-    workingDirectory: $(Build.SourcesDirectory)
-    failOnStderr: false
-    pwsh: true
-    targetType: 'inline'
-    script: |
-      Invoke-Pester -Path "$(Build.SourcesDirectory)\tests\" -Output 'Detailed' -CI
-  displayName: Unit Tests
-- task: PublishTestResults@2
-  inputs:
-    testResultsFormat: 'NUnit'
-    testResultsFiles: '**/testResults.xml'
-    failTaskOnFailedTests: true
-- task: PowerShell@2
-  inputs:
-    workingDirectory: $(Build.SourcesDirectory)
-    failOnStderr: true
-    pwsh: true
-    targetType: 'inline'
-    script: |
-      New-Item -Name 'out' -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
-      New-Item -Name 'out\$(ModuleName)' -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
-      Copy-Item -Path '$(Build.SourcesDirectory)\$(ModuleName).ps*' -Destination ".\out\$(ModuleName)\" -Force
-      Copy-Item -Path '$(Build.SourcesDirectory)\src\bin\Debug\netstandard2.0\$(ModuleName).dll' -Destination ".\out\$(ModuleName)\" -Force
-  displayName: Stage Output
-  name: stageOutput
-- task: PowerShell@2
-  inputs:
-    workingDirectory: $(Build.SourcesDirectory)
-    failOnStderr: true
-    pwsh: true
-    targetType: 'inline'
-    script: |
-      New-ExternalHelp '.\docs\' -OutputPath ".\out\$(ModuleName)\en-US\" -Force
-  displayName: Generate Help
-  name: generateHelp
-- task: PowerShell@2
-  inputs:
-    workingDirectory: $(Build.SourcesDirectory)
-    failOnStderr: true
-    pwsh: true
-    targetType: 'inline'
-    script: |
-      Publish-Module -Path ".\out\$(ModuleName)" -NugetAPIKey "$(ApiKey)"
-  displayName: Publish Module
-  name: publishHelp
+jobs:
+  - job: BuildAndDeploy
+    pool:
+      vmImage: windows-latest
+    steps:
+    - task: DotNetCoreCLI@2
+      inputs:
+        command: 'build'
+        projects: '$(Build.SourcesDirectory)/src/*.csproj'
+        workingDirectory: '$(Build.SourcesDirectory)/src/'
+    - task: PowerShell@2
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        failOnStderr: false
+        pwsh: true
+        targetType: 'inline'
+        script: |
+          Invoke-Pester -Path "$(Build.SourcesDirectory)\tests\" -Output 'Detailed' -CI
+      displayName: Unit Tests
+    - task: PublishTestResults@2
+      inputs:
+        testResultsFormat: 'NUnit'
+        testResultsFiles: '**/testResults.xml'
+        failTaskOnFailedTests: true
+    - task: PowerShell@2
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        failOnStderr: true
+        pwsh: true
+        targetType: 'inline'
+        script: |
+          New-Item -Name 'out' -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
+          New-Item -Name 'out\$(ModuleName)' -ItemType 'Directory' -ErrorAction 'SilentlyContinue'
+          Copy-Item -Path '$(Build.SourcesDirectory)\$(ModuleName).ps*' -Destination ".\out\$(ModuleName)\" -Force
+          Copy-Item -Path '$(Build.SourcesDirectory)\src\bin\Debug\netstandard2.0\$(ModuleName).dll' -Destination ".\out\$(ModuleName)\" -Force
+      displayName: Stage Output
+      name: stageOutput
+    - task: PowerShell@2
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        failOnStderr: true
+        pwsh: true
+        targetType: 'inline'
+        script: |
+          New-ExternalHelp '.\docs\' -OutputPath ".\out\$(ModuleName)\en-US\" -Force
+      displayName: Generate Help
+      name: generateHelp
+    - task: PowerShell@2
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)
+        failOnStderr: true
+        pwsh: true
+        targetType: 'inline'
+        script: |
+          Publish-Module -Path ".\out\$(ModuleName)" -NugetAPIKey "$(ApiKey)"
+      displayName: Publish Module
+      name: publishHelp

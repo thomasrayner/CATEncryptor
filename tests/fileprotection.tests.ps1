@@ -12,9 +12,9 @@ describe 'CATEncryptor - File Protection' {
         }
         Import-Module "$root\src\bin\Debug\netstandard2.0\$moduleName.dll" -Force
 
-        $controlPlaintextPath = "$root\data.csv"
+        $controlPlaintextPath = "$root\tests\data.csv"
         $plaintextPath = "TestDrive:\data.csv"
-        $controlImagePath = "$root\catfacts.png"
+        $controlImagePath = "$root\tests\catfacts.png"
         $imagePath = "TestDrive:\catfacts.png"
 
         $defaultEncryptedPlaintext = "TestDrive:\data.csv.encrypted"
