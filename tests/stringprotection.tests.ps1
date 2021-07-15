@@ -29,6 +29,9 @@ describe 'CATEncryptor - String Protection' {
             $encryptedText = Protect-String -Plaintext $plainText -Certificate $testCertificate
             $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encryptedText))
 
+            Write-Host "$plainText"
+            Write-Host "$encryptedText"
+            Write-Host "$decoded"
             $decoded -NotMatch 'big' | Should -Be $true
             $encryptedText -NotMatch 'big' | Should -Be $true
         }
@@ -37,8 +40,10 @@ describe 'CATEncryptor - String Protection' {
             $encryptedText = Protect-String -Plaintext $plainText -Certificate $testCertificate
             $decoded = [System.Text.Encoding]::UTF8.GetString([System.Convert]::FromBase64String($encryptedText))
             $decoded -NotMatch 'big' | Should -Be $true
-
+            Write-Host "$plainText"
+            Write-Host "$decoded"
             $decryptedText = Unprotect-String -Ciphertext $encryptedText -Certificate $testCertificate
+            Write-Host "$decryptedText"
             $decryptedText | Should -Be $plainText
         }
     }
